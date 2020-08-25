@@ -1,7 +1,7 @@
 # SpoutSlideshow
 
 SpoutSlideshow is a simple image slideshow with Spout output\
-built with [Openframeworks 11](https://openframeworks.cc/).\
+built with [Openframeworks 11](https://openframeworks.cc/) and Visual Studio 2017.\
 The output can be received into any Spout enabled application.\
 Refer to bin\SpoutSlideshow.pdf for details.
 
@@ -14,7 +14,7 @@ Spout functions use 2.007 SpoutLibrary.\
 Header and library files are included with the project.\
 A dll is provided with the release.
 
-### Visual Studio
+### Project files
 The project files are for Visual Studio 2017
 
 ## How to use :
@@ -53,7 +53,7 @@ APNGDIS - [http://apngdis.sourceforge.net](http://apngdis.sourceforge.net)\
 
 TINYXML - [www.sourceforge.net/projects/tinyxml](www.sourceforge.net/projects/tinyxml)\
 &nbsp;&nbsp;&nbsp;&nbsp;Original code (2.0 and earlier )\
-copyright (c) 2000-2002 [Lee Thomason](www.grinninglizard.com)\
+&nbsp;&nbsp;&nbsp;&nbsp;Copyright (c) 2000-2002 [Lee Thomason](www.grinninglizard.com)\
 &nbsp;&nbsp;&nbsp;&nbsp;ZLIB LICENSE – see tinyxml.cpp
 
 LIBPNG -\
