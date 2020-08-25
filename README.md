@@ -1,8 +1,7 @@
 # SpoutSlideshow
 
-An Openframeworks Slideshow for Spout and NDI output
-
-SpoutSlideshow is a simple image slideshow with Spout output.\
+SpoutSlideshow is a simple image slideshow with Spout output\
+built with [Openframeworks 11](https://openframeworks.cc/).\
 The output can be received into any Spout enabled application.\
 Refer to bin\SpoutSlideshow.pdf for details.
 
