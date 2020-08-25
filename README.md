@@ -11,7 +11,9 @@ Refer to bin\SpoutSlideshow.pdf for details.
 [ofxWinMenu](https://github.com/leadedge/ofxWinMenu)\
 [SpoutLibrary](https://github.com/leadedge/Spout2/tree/beta/SPOUTSDK/SpoutLibrary)
 
-Spout functions use 2.007 SpoutLibrary. Header and library files are included with the project. A dll is provided with the release.
+Spout functions use 2.007 SpoutLibrary.\
+Header and library files are included with the project.\
+A dll is provided with the release.
 
 ### Visual Studio
 The project files are for Visual Studio 2017
@@ -20,12 +22,12 @@ The project files are for Visual Studio 2017
 
 Keyboard shortcuts :  
 
-&nbsp;&nbsp;&nbsp;&nbsp;SPACE			show / hide onscreen text\ 
-&nbsp;&nbsp;&nbsp;&nbsp;'p'			play / pause  slideshow\
-&nbsp;&nbsp;&nbsp;&nbsp;LEFT/RIGHT		Next / previous slide\
-&nbsp;&nbsp;&nbsp;&nbsp;'t'			toggle topmost window\
-&nbsp;&nbsp;&nbsp;&nbsp;'f'			toggle full screen\  
-&nbsp;&nbsp;&nbsp;&nbsp;'ESC'			exit full screen\  
+&nbsp;&nbsp;&nbsp;&nbsp;SPACE - show / hide onscreen text\
+&nbsp;&nbsp;&nbsp;&nbsp;'p' - play / pause slideshow\
+&nbsp;&nbsp;&nbsp;&nbsp;LEFT/RIGHT - Next / previous slide\
+&nbsp;&nbsp;&nbsp;&nbsp;'t' - toggle topmost window\
+&nbsp;&nbsp;&nbsp;&nbsp;'f' - toggle full screen\
+&nbsp;&nbsp;&nbsp;&nbsp;'ESC' - exit full screen  
 
 ----------------------
 Copyright (C) 2017-2020 Lynn Jarvis https://spout.zeal.co/.
@@ -44,17 +46,18 @@ Copyright (C) 2017-2020 Lynn Jarvis https://spout.zeal.co/.
 &nbsp;&nbsp;&nbsp;&nbsp;along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
 
 ----------------------
-APNGDIS - http://apngdis.sourceforge.net\
+APNGDIS - [http://apngdis.sourceforge.net](http://apngdis.sourceforge.net)\
 &nbsp;&nbsp;&nbsp;&nbsp;APNG Disassembler 2.8\
 &nbsp;&nbsp;&nbsp;&nbsp;Deconstructs APNG files into individual frames.\
 &nbsp;&nbsp;&nbsp;&nbsp;Copyright (c) 2010-2015 Max Stepin (maxst at users.sourceforge.net)\
 &nbsp;&nbsp;&nbsp;&nbsp;ZLIB LICENSE – see apngdis.cpp
 
-TINYXML - www.sourceforge.net/projects/tinyxml\
-&nbsp;&nbsp;&nbsp;&nbsp;Original code (2.0 and earlier ) copyright (c) 2000-2002 [Lee Thomason](www.grinninglizard.com)\
+TINYXML - [www.sourceforge.net/projects/tinyxml](www.sourceforge.net/projects/tinyxml)\
+&nbsp;&nbsp;&nbsp;&nbsp;Original code (2.0 and earlier )\
+copyright (c) 2000-2002 [Lee Thomason](www.grinninglizard.com)\
 &nbsp;&nbsp;&nbsp;&nbsp;ZLIB LICENSE – see tinyxml.cpp
 
-LIBPNG -\ 
+LIBPNG -\
 &nbsp;&nbsp;&nbsp;&nbsp;Copyright (c) 1998-2015 Glenn Randers-Pehrson\
 &nbsp;&nbsp;&nbsp;&nbsp;(Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)\
 &nbsp;&nbsp;&nbsp;&nbsp;(Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)\
