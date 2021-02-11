@@ -29,7 +29,7 @@ Keyboard shortcuts :
 &nbsp;&nbsp;&nbsp;&nbsp;'ESC' - exit full screen  
 
 ----------------------
-Copyright (C) 2017-2020 Lynn Jarvis https://spout.zeal.co/.
+Copyright (C) 2017-2021 Lynn Jarvis https://spout.zeal.co/.
 
 &nbsp;&nbsp;&nbsp;&nbsp;This program is free software: you can redistribute it and/or modify\
 &nbsp;&nbsp;&nbsp;&nbsp;it under the terms of the GNU Lesser General Public License as published by\
