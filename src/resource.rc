@@ -45,7 +45,7 @@ CAPTION "About"
 FONT 8, "Ms Shell Dlg"
 {
     LTEXT           "", IDC_ABOUTBOXTEXT, 23, 11, 136, 59, SS_LEFT, WS_EX_LEFT
-    CONTROL         "http://spout.zeal.co", IDC_SPOUT_URL, WC_BUTTON, BS_OWNERDRAW | BS_FLAT, 14, 30, 66, 10, WS_EX_TRANSPARENT
+    CONTROL         "https://spout.zeal.co", IDC_SPOUT_URL, WC_BUTTON, BS_OWNERDRAW | BS_FLAT, 14, 30, 66, 10, WS_EX_TRANSPARENT
     DEFPUSHBUTTON   "OK", IDOK, 35, 45, 30, 14, 0, WS_EX_LEFT
 }
 
@@ -86,8 +86,8 @@ IDI_ICON1          ICON           ".\\Spout.ico"
 //
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 VS_VERSION_INFO VERSIONINFO
-    FILEVERSION     1,0,1,4
-    PRODUCTVERSION  1,0,1,4
+    FILEVERSION     1,0,1,5
+    PRODUCTVERSION  1,0,1,5
     FILEOS          VOS_NT
     FILETYPE        VFT_APP
     FILESUBTYPE     VFT2_UNKNOWN
@@ -100,12 +100,12 @@ VS_VERSION_INFO VERSIONINFO
         {
             VALUE "CompanyName", "Leading Edge Pty Ltd\0"
             VALUE "FileDescription", "Spout Slideshow\0"
-            VALUE "FileVersion", "1.014\0"
+            VALUE "FileVersion", "1.015\0"
             VALUE "InternalName", "Spout Slideshow\0"
-            VALUE "LegalCopyright", "Copyright \251 Leading Edge Pty Ltd 2016-2020\0"
+            VALUE "LegalCopyright", "Copyright \251 Leading Edge Pty Ltd 2016-2021\0"
             VALUE "OriginalFilename", "Spoutslideshow.exe\0"
             VALUE "ProductName", "Spout\0"
-            VALUE "ProductVersion", "1.014\0"
+            VALUE "ProductVersion", "1.015\0"
         }
     }
     BLOCK "VarFileInfo"

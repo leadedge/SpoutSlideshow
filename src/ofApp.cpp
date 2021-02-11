@@ -3,7 +3,7 @@
 //
 //		A Slideshow application with Spout output
 //
-//		Copyright(C) 2017 - 2020 Lynn Jarvis.
+//		Copyright(C) 2017 - 2021 Lynn Jarvis.
 //
 //		04.10.16 - First working version 1.0
 //		06.10.16 - Added random slide - version 1.001
@@ -58,6 +58,9 @@
 //				   TODO : Use Openframeworks for xml read
 //				   Rebuild Win32 SpoutLibrary 2.007 / MD(Openframeworks 11)
 //				   Version 1.014 - GitHub release
+//		11.02.21 - Transition between images on start again (https://github.com/leadedge/SpoutSlideshow/issues/1)
+//				   Clear background to alpha transparent (https://github.com/leadedge/SpoutSlideshow/issues/2)
+//				   Rebuild Win32 (no other changes) - Version 1.015
 //
 #include "ofApp.h"
 #include "resource.h"
@@ -86,13 +89,13 @@ unsigned int resolutionY[11] =  {512, 360, 480, 600,  768, 1024,  720,  960, 108
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-	/*
+	
 	// Console window so printf works
-	FILE * pCout = NULL;
-	AllocConsole();
-	freopen_s(&pCout, "CONOUT$", "w", stdout);
-	printf("SpoutSlideShow 1.014\n");
-	*/
+	// FILE * pCout = NULL;
+	// AllocConsole();
+	// freopen_s(&pCout, "CONOUT$", "w", stdout);
+	// printf("SpoutSlideShow 1.015\n");
+	
 
 	// Get instance
 	g_hInstance = GetModuleHandle(NULL);
@@ -470,10 +473,11 @@ void ofApp::DrawImageToFbo()
 	if(FileHandle) {
 
 		fbo.begin();
+		// Clear backgound to alpha transparent
 		if(bWhiteBackground)
-			ofClear(255,255,255,255);
+			ofClear(255, 255, 255, 0);
 		else
-			ofClear(0,0,0,255);
+			ofClear(0, 0, 0, 0);
 		
 		// If paused, just draw the current image
 		if(bPause) {
@@ -486,7 +490,7 @@ void ofApp::DrawImageToFbo()
 		}
 
 		// Transition between two images
-		if(bTransition && nCurrentImage > 0) {
+		if (bTransition) {
 			ofEnableAlphaBlending();
 			if(bFadeToBlack) {
 				if(progress < 1.0) { // Fade out to black
@@ -624,10 +628,12 @@ bool ofApp::OnTimer ()
 			FileHandle = GetFirstFile(slideshowpath, filename, MAX_PATH);
 			if(!FileHandle) return false;
 			nImageFiles = CountFiles(FileHandle);
+
 			// Get the next image number
 			nThisImage = nLastImage+1;
 			if(nThisImage > nImageFiles)
 					nThisImage = 0;
+
 			// Get the next image file starting from the first
 			FileHandle = GetFirstFile(slideshowpath, filename, MAX_PATH);
 			nImage = 0;
@@ -703,7 +709,6 @@ HANDLE ofApp::GetFirstFile(const char *spath, char *filename, int maxchars)
 
 HANDLE ofApp::GetNextFile(HANDLE &filehandle, char *filename, int maxchars)
 {
-    // char tmp[MAX_PATH];
 	HANDLE nexthandle = NULL;
 	WIN32_FIND_DATAA filedata;
 
@@ -1342,13 +1347,13 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             lpdis = (LPDRAWITEMSTRUCT)lParam;
 			if (lpdis->itemID == -1) break; 
             SetTextColor(lpdis->hDC, RGB(6, 69, 173));
-			DrawTextA(lpdis->hDC, "http://spout.zeal.co", -1, &lpdis->rcItem, DT_CENTER);
+			DrawTextA(lpdis->hDC, "https://spout.zeal.co/", -1, &lpdis->rcItem, DT_CENTER);
 			break;
 
 		case WM_COMMAND:
 
 			if (LOWORD(wParam) == IDC_SPOUT_URL) {
-				sprintf_s(temp, "http://spout.zeal.co");
+				sprintf_s(temp, "https://spout.zeal.co/");
 				ShellExecuteA(hDlg, "open", temp, NULL, NULL, SW_SHOWNORMAL); 
 				EndDialog(hDlg, 0);
 				return (INT_PTR)TRUE;
@@ -1442,8 +1447,6 @@ bool ofApp::LoadPng(const char *filepath)
 			if(delay_den == 0) 
 				delay_den = 100;
 			if(delay_num == 0)
-				// LJ DEBUG
-				// m_FrameDelay = (1.0f/60.0f)*1000.0f; // fast as possible e.g. 16.67msec for 60fps
 				m_FrameDelay = (1.0f/m_DisplayFrequency)*1000.0f; // fast as possible e.g. 16.67msec for 60fps
 			else
 				m_FrameDelay = ((float)m_Frames[0].delay_num/(float)m_Frames[0].delay_den)*1000.0f; // in msec
@@ -1452,7 +1455,6 @@ bool ofApp::LoadPng(const char *filepath)
 			// FrameDelay is the delay between frames required in msec
 			// FrameSpeed is the multiple of frame rate used to control the delay between frames
 			m_FrameSpeed = m_FrameDelay/m_FrameRate;
-			// LJ DEBUG
 			// set dwDuration to be the total time of the animated png
 			float duration = m_FrameDelay * (float)m_Frames.size(); // msecs
 			// round up
