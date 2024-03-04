@@ -3,7 +3,7 @@
 //
 //		A Slideshow application with Spout output
 //
-//		Copyright(C) 2017 - 2021 Lynn Jarvis.
+//		Copyright(C) 2017 - 2024 Lynn Jarvis.
 //
 //		04.10.16 - First working version 1.0
 //		06.10.16 - Added random slide - version 1.001
@@ -61,12 +61,20 @@
 //		11.02.21 - Transition between images on start again (https://github.com/leadedge/SpoutSlideshow/issues/1)
 //				   Clear background to alpha transparent (https://github.com/leadedge/SpoutSlideshow/issues/2)
 //				   Rebuild Win32 (no other changes) - Version 1.015
+//		27.02.24 - Update to latest SpoutLibrary and openframeworks 12
+//				   SendFbo in DrawToFbo to allow minimized
+//				   _HAS_STD_BYTE=0 in preprocessor defines for OF12 and C++17
+//				   Change dialog font size from 8 to 9
+//				   Create Data/Fonts folder for on-screen font
+//				   SpoutMessageBox for help and about dialogs
+//				   Save fit-to-window to registry settings
+//				   Increase delay options to 30 seconds
+//				   Build x64 /MT - Version 1.016
 //
 #include "ofApp.h"
 #include "resource.h"
 
 INT_PTR CALLBACK SlideshowDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg,LPARAM lp, LPARAM pData);
 static ofApp *pThis; // Pointer for callbacks to access the ofApp class
 
@@ -94,8 +102,8 @@ void ofApp::setup() {
 	// FILE * pCout = NULL;
 	// AllocConsole();
 	// freopen_s(&pCout, "CONOUT$", "w", stdout);
-	// printf("SpoutSlideShow 1.015\n");
-	
+	// printf("SpoutSlideShow 1.016\n");
+
 
 	// Get instance
 	g_hInstance = GetModuleHandle(NULL);
@@ -115,18 +123,19 @@ void ofApp::setup() {
 				if(VerQueryValueA(&data[0], ("\\StringFileInfo\\080904E4\\ProductVersion"), &pvProductVersion, &iProductVersionLen)) {
 					strcat_s(title, 256, " - v");
 					strcat_s(title, 256, (char *)pvProductVersion);
+					g_version = title;
 				}
 			}
 		}
 	}
-	ofSetWindowTitle(title); // show it on the title bar
+	ofSetWindowTitle(g_version.c_str()); // show it on the title bar
 
 	strcpy_s(sendername, "Spout Slideshow");	// Set the sender name
 
 	// Load a font rather than the default
 	GetModuleFileNameA(NULL, slideshowpath, MAX_PATH);
 	PathRemoveFileSpecA(slideshowpath); // Application folder
-	string fontName = "\\verdana.ttf";
+	string fontName = "\\Data\\Fonts\\verdana.ttf";
 	string fontPath = slideshowpath + fontName;
 	myFont.load(fontPath, 12, true, true);
 
@@ -183,15 +192,15 @@ void ofApp::setup() {
 	//
 	hPopup = menu->AddPopupMenu(hMenu, "Window");
 	bShowInfo = true;
-	menu->AddPopupItem(hPopup, "Show info", true); // Checked and auto-check
+	menu->AddPopupItem(hPopup, "Show info ' '", true); // Checked and auto-check
 	bPause = false;
-	menu->AddPopupItem(hPopup, "Pause"); // Not checked and auto-check
+	menu->AddPopupItem(hPopup, "Pause 'p'"); // Not checked and auto-check
 	bTopmost = false; // app is not topmost yet
-	menu->AddPopupItem(hPopup, "Show on top"); // Not checked (default)
+	menu->AddPopupItem(hPopup, "Show on top 't'"); // Not checked (default)
 	bFullscreen = false; // not fullscreen yet
-	menu->AddPopupItem(hPopup, "Full screen", false, false); // Not checked and not auto-check
+	menu->AddPopupItem(hPopup, "Full screen 'f'", false, false); // Not checked and not auto-check
 	bFitToWindow = false; // not fitted yet
-	menu->AddPopupItem(hPopup, "Fit to window");
+	menu->AddPopupItem(hPopup, "Fit to window 'w'");
 
 	//
 	// Help popup menu
@@ -253,7 +262,7 @@ void ofApp::setup() {
 	float msecs = (float)(ofGetElapsedTimeMicros() / 1000);
 	tMsecs = (int)msecs; // start msecs
 	start_msec = 0;
-	progress_time = 2.0; // total transition time
+	progress_time = 2.0f; // total transition time
 	progress = 0; // Transition progress 0 - 2.0
 
 	// Set framerate to 30 to reduce CPU load for normal pictures
@@ -293,12 +302,13 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 	
-	char imagefile[MAX_PATH];
-	char temp[MAX_PATH];
+	char imagefile[MAX_PATH]{};
+	char temp[MAX_PATH]{};
 
 	// Calculate frame time for slide duration
 	float msecs = (float)(ofGetElapsedTimeMicros()/1000);
 	float frame_time = msecs-start_msec;
+	if (frame_time < 0) frame_time = 0;
 	start_msec = msecs;
 
 	// If the Settings dialog has been opened and user clicked OK
@@ -355,7 +365,7 @@ void ofApp::update() {
 		if(FileHandle) {
 
 			// Progress for transition should be 1 second out and 1 second in
-			if(progress <= progress_time) {
+			if(progress <= progress_time) { // 2.0
 				if(frame_time > 0.0) {
 					progress += frame_time/1000.0;
 					if(progress > progress_time) progress = progress_time;
@@ -412,7 +422,7 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	char str[256];
+	char str[256]{};
 	int alpha = 255;
 	ofBackground(0, 0, 0, 255);
 	ofSetColor(255, 255, 255, alpha);
@@ -422,45 +432,32 @@ void ofApp::draw() {
 	DrawImageToFbo();
 	fbo.draw(0, 0, ofGetWidth(), ofGetHeight());
 
-	// ====== SPOUT =====
-	if(!bInitialized) {
-		// Create the sender
-		bInitialized = spoutsender->CreateSender(sendername, SenderWidth, SenderHeight); 
-	}
+	if(spoutsender->IsInitialized()
+		&& bShowInfo && !bFullscreen
+		&& ofGetWidth() > 0 && ofGetHeight() > 0) {
+			
+		// Show what it is sending
+		ofSetColor(255);
+		sprintf_s(str, "Sending as : [%s] (%d x %d)", sendername, SenderWidth, SenderHeight);
+		myFont.drawString(str, 20, 20);
 
-	if(bInitialized) {
-
-        if(ofGetWidth() > 0 && ofGetHeight() > 0) { // protect against user minimize
-            // Send the texture out for all receivers to use
-			spoutsender->SendTexture(fbo.getTexture().getTextureData().textureID,
-									 fbo.getTexture().getTextureData().textureTarget,
-									 SenderWidth, SenderHeight, false);
-
-            if(bShowInfo && !bFullscreen) {
-				// Show what it is sending
-				ofSetColor(255);
-				sprintf_s(str, "Sending as : [%s] (%d x %d)", sendername, SenderWidth, SenderHeight);
-				myFont.drawString(str, 20, 20);
-
-				// Warn if no images
-				if(!FileHandle) {
-			        myFont.drawString("No image files in the folder", 20, 42);
-				}
-				else {
-					sprintf_s(str, "%s (%d of %d)", filename, nCurrentImage, nImageFiles);
-					myFont.drawString(str, 20, 42);
-				}
-
-				// The current folder
-				// sprintf_s(str, "Folder : %s", slideshowpath);
-				// myFont.drawString(str, 15, ofGetHeight()-42);
-
-				// How to open settings
-				sprintf_s(str, "' ' hide info : 'k' keys : RH click Settings");
-				myFont.drawString(str, 15, ofGetHeight()-20);
-
-			}
+		// Warn if no images
+		if(!FileHandle) {
+		     myFont.drawString("No image files in the folder", 20, 42);
 		}
+		else {
+			sprintf_s(str, "%s (%d of %d)", filename, nCurrentImage, nImageFiles);
+			myFont.drawString(str, 20, 42);
+		}
+
+		// The current folder
+		// sprintf_s(str, "Folder : %s", slideshowpath);
+		// myFont.drawString(str, 20, ofGetHeight()-42);
+
+		// How to open settings
+		sprintf_s(str, "' ' hide info  :  ?  help  :  Right mouse click - Settings");
+		myFont.drawString(str, 20, ofGetHeight()-20);
+
 	}
 
 } // end Draw
@@ -479,12 +476,15 @@ void ofApp::DrawImageToFbo()
 		else
 			ofClear(0, 0, 0, 0);
 		
-		// If paused, just draw the current image
+		// If paused, just draw and send the current image
 		if(bPause) {
 			current_image.draw((fbo.getWidth()-current_image.getWidth())/2,
 								(fbo.getHeight()-current_image.getHeight())/2, 
 								current_image.getWidth(),
 								current_image.getHeight());
+
+			spoutsender->SendFbo(fbo.getId(), SenderWidth, SenderHeight, false);
+
 			fbo.end();
 			return;
 		}
@@ -511,8 +511,9 @@ void ofApp::DrawImageToFbo()
 				}
 			}
 			else {
+
 				// Fade from the last image to the next
-				if(progress < 1.0) {
+				if (progress < 1.0) {
 					alpha = 255-(int)(progress*255.0);
 					ofSetColor(255, 255, 255, alpha);
 					last_image.draw((fbo.getWidth()-last_image.getWidth())/2,
@@ -541,6 +542,10 @@ void ofApp::DrawImageToFbo()
 								current_image.getWidth(),
 								current_image.getHeight());
 		}
+
+		// Send the contents of the fbo
+		spoutsender->SendFbo(fbo.getId(), SenderWidth, SenderHeight, false);
+
 		fbo.end();
 	}
 } // end DrawImageToFbo
@@ -680,7 +685,7 @@ HANDLE ofApp::GetFirstFile(const char *spath, char *filename, int maxchars)
 
 	sprintf_s(tmp, MAX_PATH, "%s\\*.*", spath);
     filehandle = FindFirstFileA((LPCSTR)tmp, (LPWIN32_FIND_DATAA)&filedata);
-    if((int)filehandle > 0) {
+    if(PtrToUint(filehandle) > 0) {
 		// Check extension for allowed image types
 		while (strstr((char *)filedata.cFileName, ".jpg") == 0
 			&& strstr((char *)filedata.cFileName, ".png") == 0
@@ -752,6 +757,9 @@ void ofApp::windowResized(int w, int h) {
 //--------------------------------------------------------------
 void ofApp::exit() {
 	if(bInitialized) spoutsender->ReleaseSender(); // Release the sender
+	// Save settings to the registry
+	WriteSettings();
+
 }
 
 //--------------------------------------------------------------
@@ -774,7 +782,7 @@ void ofApp::keyPressed(int key) {
 	}
 
 	// Show keyboard shortcuts
-	if (key == 'k' || key == 'K') {
+	if (key == '?') {
 		string showinfo;
 		showinfo = "'  '  :  Hide onscreen text\n";
 		showinfo += "'p'  :  Pause slideshow\n";
@@ -782,7 +790,8 @@ void ofApp::keyPressed(int key) {
 		showinfo += "'<' :  Previous slide\n";
 		showinfo += "'f'  :  Full screen\n";
 		showinfo += "'t'  :  Topmost window\n";
-		MessageBoxA(NULL, (LPSTR)showinfo.c_str(), "SpoutSlideShow", MB_OK);
+		showinfo += "'w' :  Fit to window\n";
+		spoutsender->SpoutMessageBox(NULL, (LPSTR)showinfo.c_str(), "SpoutSlideShow", MB_ICONINFORMATION | MB_OK);
 	}
 
 	// Remove or show screen info
@@ -839,6 +848,9 @@ void ofApp::keyPressed(int key) {
 		doTopmost(bTopmost);
 	}
 
+	if (key == 'w') {
+		bFitToWindow = !bFitToWindow;
+	}
 }
 
 
@@ -958,6 +970,7 @@ void ofApp::ReadSettings()
 	DWORD dwRandom = 0;
 	DWORD dwTransition = 1;
 	DWORD dwFade = 1;
+	DWORD dwFit = 0;
 	DWORD dwDuration = 2; // 4 secs
 	DWORD dwResolution = 6;
 	char path[MAX_PATH];
@@ -970,6 +983,7 @@ void ofApp::ReadSettings()
 	spoutsender->ReadDwordFromRegistry(HKEY_CURRENT_USER, "Software\\Leading Edge\\SpoutSlideshow", "random", &dwRandom);
 	spoutsender->ReadDwordFromRegistry(HKEY_CURRENT_USER, "Software\\Leading Edge\\SpoutSlideshow", "transition", &dwTransition);
 	spoutsender->ReadDwordFromRegistry(HKEY_CURRENT_USER, "Software\\Leading Edge\\SpoutSlideshow", "fade", &dwFade);
+	spoutsender->ReadDwordFromRegistry(HKEY_CURRENT_USER, "Software\\Leading Edge\\SpoutSlideshow", "fit", &dwFit);
 	
 	// Set variables
 	if(path[0]) strcpy_s(slideshowpath, MAX_PATH, path);
@@ -983,6 +997,7 @@ void ofApp::ReadSettings()
 	bTransition = (dwTransition == 1); // transition
 	bFadeToBlack = (dwFade == 1); // fade out to black
 	if (bFadeToBlack) tIntervalMsec += 1000; // allow for half the transition time
+	bFitToWindow = (dwFit == 1); // fit to window
 
 }
 
@@ -996,6 +1011,8 @@ void ofApp::WriteSettings()
 	spoutsender->WriteDwordToRegistry(HKEY_CURRENT_USER, "Software\\Leading Edge\\SpoutSlideshow", "random", (DWORD)bRandom);
 	spoutsender->WriteDwordToRegistry(HKEY_CURRENT_USER, "Software\\Leading Edge\\SpoutSlideshow", "transition", (DWORD)bTransition);
 	spoutsender->WriteDwordToRegistry(HKEY_CURRENT_USER, "Software\\Leading Edge\\SpoutSlideshow", "fade", (DWORD)bFadeToBlack);
+	spoutsender->WriteDwordToRegistry(HKEY_CURRENT_USER, "Software\\Leading Edge\\SpoutSlideshow", "fit", (DWORD)bFitToWindow);
+
 
 }
 
@@ -1090,11 +1107,11 @@ void ofApp::appMenuFunction(string title, bool bChecked) {
 	// Window menu
 	//
 
-	if (title == "Show info") {
+	if (title == "Show info ' '") {
 		bShowInfo = bChecked;
 	}
 
-	if (title == "Pause") {
+	if (title == "Pause 'p'") {
 		bPause = bChecked;
 		if (bPause) {
 			// If fade out and in again, use the image it is fading from if progress
@@ -1106,17 +1123,17 @@ void ofApp::appMenuFunction(string title, bool bChecked) {
 		}
 	}
 
-	if (title == "Show on top") {
+	if (title == "Show on top 't'") {
 		bTopmost = bChecked;
 		doTopmost(bTopmost);
 	}
 
-	if (title == "Full screen") {
+	if (title == "Full screen 'f'") {
 		bFullscreen = !bFullscreen; // Not auto-checked and also used in the keyPressed function
 		doFullScreen(bFullscreen); // But take action immediately
 	}
 
-	if (title == "Fit to window") {
+	if (title == "Fit to window 'w'") {
 		bFitToWindow = bChecked;
 	}
 
@@ -1131,11 +1148,17 @@ void ofApp::appMenuFunction(string title, bool bChecked) {
 		showinfo += "'<' :  Previous slide\n";
 		showinfo += "'f'  :  Full screen\n";
 		showinfo += "'t'  :  Topmost window\n";
-		MessageBoxA(NULL, (LPSTR)showinfo.c_str(), "SpoutSlideShow", MB_OK);
+		showinfo += "'w' :  Fit to window\n";
+		spoutsender->SpoutMessageBox(NULL, (LPSTR)showinfo.c_str(), "SpoutSlideShow", MB_ICONINFORMATION | MB_OK);
 	}
 
 	if (title == "About") {
-		DialogBoxA(g_hInstance, MAKEINTRESOURCEA(IDD_ABOUTBOX), g_hwnd, About);
+		std::string about =  g_version.c_str();
+		about += "\n";
+		about += "<a href=\"http://spout.zeal.co/\">http://spout.zeal.co/</a>\n";
+		// Custom icon for the SpoutMessagBox, activated by MB_USERICON
+		spoutsender->SpoutMessageBoxIcon(LoadIconA(GetModuleHandle(NULL), MAKEINTRESOURCEA(IDI_ICON1)));
+		spoutsender->SpoutMessageBox(NULL, (LPSTR)about.c_str(), "SpoutSlideShow", MB_USERICON | MB_OK);
 	}
 
 	if (title == "Documentation") {
@@ -1160,7 +1183,7 @@ INT_PTR CALLBACK SlideshowDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 	char name[MAX_PATH];
 	int nSenders = 0;
 	int index = 0;
-	char durationprefs[10][128] =  {"2", "4 (default)", "6", "8", "10", "12", "14", "16", "18", "20"};
+	char durationprefs[15][128] =  {"2", "4 (default)", "6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30"};
 	char resolutionprefs[11][128] =  {"512 x 512", "640 x 360", "640 x 480", "800 x 600", "1024 x 768", "1024 x 1024", "1280 x 720 (default)", "1600 x 960", "1920 x 1080",  "2560 x 1440",  "3840 x 2160"};
 
 	switch (message) {
@@ -1175,7 +1198,7 @@ INT_PTR CALLBACK SlideshowDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 			// Duration list
 			hwndList = GetDlgItem(hDlg, IDC_DURATION);
-			for (int k = 0; k < 10; k ++) {
+			for (int k = 0; k < 15; k ++) {
 				strcpy_s(name, sizeof(name), durationprefs[k]);
 				SendMessageA(hwndList, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)name);
 			}
@@ -1294,75 +1317,6 @@ INT_PTR CALLBACK SlideshowDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 
 			}
 
-			break;
-	}
-	return (INT_PTR)FALSE;
-}
-
-
-// Message handler for About box
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	char temp[512];
-	char about[1024];
-	DWORD dummy, dwSize;
-	LPDRAWITEMSTRUCT lpdis;
-	HWND hwnd = NULL;
-	HCURSOR cursorHand = NULL;
-	HINSTANCE hInstance = GetModuleHandle(NULL);
-
-	switch (message) {
-
-		case WM_INITDIALOG:
-
-			sprintf_s(about, 1024, "Spout Slideshow\n");
-
-			// Get product version number
-			if(GetModuleFileNameA(hInstance, temp, 256)) {
-				dwSize = GetFileVersionInfoSizeA(temp, &dummy);
-				if(dwSize > 0) {
-					vector<BYTE> data(dwSize);
-					if(GetFileVersionInfoA(temp, NULL, dwSize, &data[0])) {
-						LPVOID pvProductVersion = NULL;
-						unsigned int iProductVersionLen = 0;
-						if(VerQueryValueA(&data[0], ("\\StringFileInfo\\080904E4\\ProductVersion"), &pvProductVersion, &iProductVersionLen)) {
-							sprintf_s(temp, 256, "  Version %s\n", (char *)pvProductVersion);
-							strcat_s(about, 1024, temp);
-						}
-					}
-				}
-			}
-			SetDlgItemTextA(hDlg, IDC_ABOUTBOXTEXT, (LPCSTR)about);
-
-			// Hyperlink hand cursor
-			cursorHand=LoadCursor(NULL, IDC_HAND);
-			hwnd = GetDlgItem(hDlg, IDC_SPOUT_URL);
-			SetClassLongPtr(hwnd, GCLP_HCURSOR, (LONG_PTR)cursorHand);
-
-			return (INT_PTR)TRUE;
-
-		case WM_DRAWITEM:
-			// The blue hyperlink
-            lpdis = (LPDRAWITEMSTRUCT)lParam;
-			if (lpdis->itemID == -1) break; 
-            SetTextColor(lpdis->hDC, RGB(6, 69, 173));
-			DrawTextA(lpdis->hDC, "https://spout.zeal.co/", -1, &lpdis->rcItem, DT_CENTER);
-			break;
-
-		case WM_COMMAND:
-
-			if (LOWORD(wParam) == IDC_SPOUT_URL) {
-				sprintf_s(temp, "https://spout.zeal.co/");
-				ShellExecuteA(hDlg, "open", temp, NULL, NULL, SW_SHOWNORMAL); 
-				EndDialog(hDlg, 0);
-				return (INT_PTR)TRUE;
-			}
-
-			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL) {
-				EndDialog(hDlg, LOWORD(wParam));
-				return (INT_PTR)TRUE;
-			}
 			break;
 	}
 	return (INT_PTR)FALSE;

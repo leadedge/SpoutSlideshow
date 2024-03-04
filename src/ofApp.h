@@ -79,6 +79,7 @@ class ofApp : public ofBaseApp {
 		HWND g_hwndForeground; // current foreground window
 		HINSTANCE g_hInstance; // Application instance
 		HWND g_DialogHwnd; // Settings dialog window
+		std::string g_version; // version number;
 
 		// Variables used by WNDPROC
 		bool bShowInfo;

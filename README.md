@@ -1,7 +1,7 @@
 # SpoutSlideshow
 
 SpoutSlideshow is a simple image slideshow with Spout output\
-built with [Openframeworks 11](https://openframeworks.cc/) and Visual Studio 2017.\
+built with [Openframeworks 11](https://openframeworks.cc/) and Visual Studio 2012.\
 The output can be received into any Spout enabled application.\
 Refer to bin\SpoutSlideshow.pdf for details.
 
@@ -15,7 +15,7 @@ Header and library files are included with the project.\
 A dll is provided with the release.
 
 ### Project files
-The project files are for Visual Studio 2017
+The project files are for Visual Studio 2012
 
 ## How to use :
 
@@ -29,7 +29,7 @@ Keyboard shortcuts :
 &nbsp;&nbsp;&nbsp;&nbsp;'ESC' - exit full screen  
 
 ----------------------
-Copyright (C) 2017-2021 Lynn Jarvis https://spout.zeal.co/.
+Copyright (C) 2017-2024 Lynn Jarvis https://spout.zeal.co/.
 
 &nbsp;&nbsp;&nbsp;&nbsp;This program is free software: you can redistribute it and/or modify\
 &nbsp;&nbsp;&nbsp;&nbsp;it under the terms of the GNU Lesser General Public License as published by\

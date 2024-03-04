@@ -10,9 +10,6 @@
     <ClCompile Include="src\apngdis.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\addons\ofxWinMenu\ofxWinMenu.cpp">
-      <Filter>addons\ofxWinMenu</Filter>
-    </ClCompile>
     <ClCompile Include="libs\tinyxml\tinystr.cpp">
       <Filter>tinyxml</Filter>
     </ClCompile>
@@ -24,6 +21,9 @@
     </ClCompile>
     <ClCompile Include="libs\tinyxml\tinyxmlparser.cpp">
       <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\addons\ofxWinMenu\src\ofxWinMenu.cpp">
+      <Filter>addons\ofxWinMenu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -47,9 +47,6 @@
     <ClInclude Include="src\apngdis.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\addons\ofxWinMenu\ofxWinMenu.h">
-      <Filter>addons\ofxWinMenu</Filter>
-    </ClInclude>
     <ClInclude Include="src\resource.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -61,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="src\SpoutLibrary.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\addons\ofxWinMenu\src\ofxWinMenu.h">
+      <Filter>addons\ofxWinMenu</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
